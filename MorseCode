@@ -1,0 +1,104 @@
+#include <LiquidCrystal.h>
+#include <String.h>
+LiquidCrystal lcd(12,11,5,4,3,2);
+
+String Message[1000];
+int chocolate_milk = 0;
+String MorseCode[26] = { ".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-", ".-.","...","-","..-","...-",".--","-..-","-.--","--.."};
+
+
+//time keepers...
+int time_1;
+int time_2;
+
+int lettertime = 1000;
+int spacetime = 1000 ;
+int dottime = 1000 ;
+int dashtime = 1000;
+
+void setup()
+{
+    lcd.begin(16,2);
+}
+void loop()
+{
+    while(analogRead(A0) == 0)
+    {
+        Hour_glass();
+    }
+    time_1 = millis();
+    GreenGoblin();
+    while(analogRead(A0) > 0)
+    {
+        Hour_glass();
+    }
+    
+    time_2 = millis(); 
+    Message[chocolate_milk] += SignalTranslator();
+    Decoder();
+    KingPin();
+}
+
+    
+void Hour_glass()
+{
+    lcd.setCursor(3,0);
+    String temp[] = {"S","e","a","r","c","h","i","n","g",".",".","."};
+    for(int i = 0; i < sizeof(temp); i++)
+    {
+        lcd.setCursor((3+i),0);
+        lcd.print(temp[i]);
+        delay(200);
+    }
+    lcd.setCursor(0,0);
+    lcd.clear();
+}
+ 
+String SignalTranslator()
+{
+    if((time_2 - time_1) > 0 && (time_2 - time_1) <= dottime)
+    {
+        return ".";
+    }
+    else if((time_2 -time_1) > dottime && (time_2 - time_1) <= dashtime)
+    {
+        return "-";
+    }
+}
+
+void Decoder()
+{
+    for(int i = 0; i <= chocolate_milk; i++)
+    {
+        for(int j = 0; j < 26; j++)
+        {
+            if(Message[i] == Morse_Code[j])
+            {
+                Message[i] = Morse_Code[j];
+            }
+        }
+    }
+}
+            
+void GreenGoblin()
+{
+    if((time_1-time_2) >= lettertime && (time_1 - time_2) < spacetime)
+    {
+        chocolate_milk++;
+    }
+    else if((time_1-time_2) >= spacetime)
+    {
+        Message[chocolate_milk] = " ";
+        chocolate_milk++;
+    }
+}
+
+void KingPin()
+{
+    for(int j = 0; j < sizeof(Message); j++)
+    {
+        lcd.setCursor(0,0);
+        lcd.print(Message[j]);
+        lcd.autoscroll();
+    }
+}
